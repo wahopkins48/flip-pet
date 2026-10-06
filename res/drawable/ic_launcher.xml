@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Purple tile with a single eldritch eye. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="48" android:viewportHeight="48">
+    <path android:fillColor="#2A1240" android:pathData="M6,4h36a4,4 0,0 1,4 4v32a4,4 0,0 1,-4 4h-36a4,4 0,0 1,-4 -4v-32a4,4 0,0 1,4 -4z" />
+    <path android:fillColor="#E8D9FF" android:pathData="M24,11c8,0 14,13 14,13s-6,13 -14,13s-14,-13 -14,-13s6,-13 14,-13z" />
+    <path android:fillColor="#7B1FA2" android:pathData="M24,17a7,7 0,1 0,0.1 0z" />
+    <path android:fillColor="#0B0510" android:pathData="M24,20a4,4 0,1 0,0.1 0z" />
+</vector>
