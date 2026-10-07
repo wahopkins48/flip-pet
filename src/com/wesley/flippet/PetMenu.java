@@ -72,13 +72,13 @@ public class PetMenu extends Activity {
 
     /** Names it, then returns to the pet so the new name is visible at once. */
     private void name(String name) {
-        if (local == null) local = new LocalPet(this);
+        if (local == null) local = LocalPet.shared(this);
         local.name(name);
         finish();
     }
 
     private void newEgg() {
-        if (local == null) local = new LocalPet(this);
+        if (local == null) local = LocalPet.shared(this);
         local.newEgg();
         finish();
     }

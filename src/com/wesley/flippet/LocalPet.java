@@ -118,6 +118,19 @@ final class LocalPet {
     private final File file;
     private JSONObject state;
 
+    private static LocalPet shared;
+
+    /**
+     * The one pet per process. New egg, naming, the cover panel and the main
+     * screen all have to see the same creature, and they do only if it is one
+     * object. A second LocalPet would hold a stale copy of the save and, when it
+     * next ticked, write that stale copy straight back over the real one.
+     */
+    static LocalPet shared(Context c) {
+        if (shared == null) shared = new LocalPet(c);
+        return shared;
+    }
+
     LocalPet(Context c) {
         file = new File(c.getFilesDir(), "pet.json");
         state = read();

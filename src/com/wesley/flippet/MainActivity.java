@@ -41,8 +41,9 @@ public class MainActivity extends Activity {
     private final String[] actions = {"feed", "play", "ward", "sleep"};
 
     /**
-     * The pet's brain. Opened once and kept: it caches the parsed state and only
-     * touches the disk when the numbers actually change.
+     * The pet's brain. Shared per process so the menu, the cover, and this
+     * screen always see the same creature; a private copy here would tick and
+     * write a stale save back over whatever a new egg just wrote.
      */
     private LocalPet local;
 
@@ -91,6 +92,9 @@ public class MainActivity extends Activity {
 
     @Override protected void onResume() {
         super.onResume();
+        // Draw now rather than waiting for the next poll, so a change made from
+        // the menu (a new egg, a new name) shows up the instant we come back.
+        refresh(false);
         poll.postDelayed(tick, POLL_MS);
     }
 
@@ -126,7 +130,7 @@ public class MainActivity extends Activity {
         if (cover != null || displays == null) return;
         Display panel = findCover();
         if (panel == null) return;
-        if (local == null) local = new LocalPet(this);
+        if (local == null) local = LocalPet.shared(this);
         try {
             CoverPet candidate = new CoverPet(this, panel, local);
             candidate.show();
@@ -272,7 +276,7 @@ public class MainActivity extends Activity {
     }
 
     private void refresh(boolean loud) {
-        if (local == null) local = new LocalPet(this);
+        if (local == null) local = LocalPet.shared(this);
         show(local.view());
     }
 
@@ -284,7 +288,7 @@ public class MainActivity extends Activity {
         messageUntil = 0;
         status.setText("...");
         try {
-            if (local == null) local = new LocalPet(this);
+            if (local == null) local = LocalPet.shared(this);
             JSONObject view = local.act(wire);
             show(view);
             // show() keeps the poll from overwriting this, for MESSAGE_MS.
