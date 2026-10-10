@@ -8,6 +8,7 @@ import android.hardware.display.DisplayManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -36,6 +37,7 @@ public class MainActivity extends Activity {
     private PetView pet;
     private TextView fedBar, joyBar, vitBar, wardBar;
     private TextView status;
+    private TextView keys;
     private Button[] buttons;
 
     private final String[] actions = {"feed", "play", "ward", "sleep"};
@@ -95,11 +97,15 @@ public class MainActivity extends Activity {
         // Draw now rather than waiting for the next poll, so a change made from
         // the menu (a new egg, a new name) shows up the instant we come back.
         refresh(false);
+        pet.setAnimating(true);
+        poll.removeCallbacks(tick);
         poll.postDelayed(tick, POLL_MS);
     }
 
     @Override protected void onPause() {
         poll.removeCallbacks(tick);
+        pet.setAnimating(false);
+        if (local != null) local.flush();
         super.onPause();
     }
 
@@ -168,7 +174,9 @@ public class MainActivity extends Activity {
         title = Ui.header(this, "an unthought egg");
         root.addView(title);
 
-        stageLine = Ui.centered(this, "", 13, Ui.DIM);
+        stageLine = Ui.centered(this, "", 12, Ui.DIM);
+        stageLine.setSingleLine(true);
+        stageLine.setEllipsize(TextUtils.TruncateAt.END);
         root.addView(stageLine);
 
         pet = new PetView(this);
@@ -203,10 +211,14 @@ public class MainActivity extends Activity {
         status = Ui.centered(this, "waking something up", 14, Color.WHITE);
         status.setGravity(Gravity.CENTER);
         status.setPadding(4, 2, 4, 2);
+        status.setLines(2);
+        status.setEllipsize(TextUtils.TruncateAt.END);
         root.addView(status);
 
-        root.addView(Ui.keys(this, "OK acts  -  BACK for more"));
+        keys = Ui.keys(this, "Gentle | 1-4 act | BACK menu");
+        root.addView(keys);
         setContentView(root);
+        buttons[0].requestFocus();
     }
 
     private static String label(String action) {
@@ -237,9 +249,9 @@ public class MainActivity extends Activity {
     }
 
     private static String paint(String name, double value) {
-        int filled = (int) Math.round(value / 10.0);
+        int filled = (int) Math.round(value * 6.0 / 100.0);
         StringBuilder sb = new StringBuilder(name).append(' ');
-        for (int i = 0; i < 10; i++) sb.append(i < filled ? '#' : '.');
+        for (int i = 0; i < 6; i++) sb.append(i < filled ? '#' : '.');
         return sb.append(String.format(" %3d", (int) Math.round(value))).toString();
     }
 
@@ -253,6 +265,7 @@ public class MainActivity extends Activity {
             : (stage <= 0 ? "an unthought egg" : p.optString("species", "Hatchling")));
         stageLine.setText(p.optString("stage_name", "") + "   " + p.optString("age_label", "")
             + (asleep ? "   asleep" : ""));
+        keys.setText((p.optBoolean("survival") ? "Survival" : "Gentle") + " | 1-4 act | BACK menu");
 
         pet.setPet(stage, asleep, dead, p.optBoolean("sick"), p.optInt("phenotype", 0));
         pet.setHatchProgress(stage == 0
@@ -274,6 +287,14 @@ public class MainActivity extends Activity {
             status.setText(p.optString("mood", ""));
         }
         status.setTextColor(dead ? 0xFFD08080 : (p.optBoolean("sick") ? 0xFFD0E070 : Color.WHITE));
+        if (p.optBoolean("danger")) {
+            status.setText("Empty meter: " + p.optInt("grace_minutes") + " min left. Care now.");
+            status.setTextColor(0xFFFFAA80);
+        }
+        if (p.optBoolean("save_failed")) {
+            status.setText("Could not save. Check free storage.");
+            status.setTextColor(0xFFFFAA80);
+        }
     }
 
     private void refresh(boolean loud) {
@@ -295,7 +316,7 @@ public class MainActivity extends Activity {
             // show() keeps the poll from overwriting this, for MESSAGE_MS.
             messageUntil = SystemClock.uptimeMillis() + MESSAGE_MS;
             String said = view.optString("message", "");
-            if (!said.isEmpty()) status.setText(said);
+            if (!said.isEmpty() && !view.optBoolean("danger") && !view.optBoolean("save_failed")) status.setText(said);
         } catch (RuntimeException e) {
             status.setText("that did not work: " + e.getMessage());
         } finally {
@@ -304,8 +325,12 @@ public class MainActivity extends Activity {
     }
 
     @Override public boolean onKeyDown(int code, KeyEvent event) {
-        if (code == KeyEvent.KEYCODE_BACK) {
-            startActivity(new Intent(this, PetMenu.class));
+        if (code >= KeyEvent.KEYCODE_1 && code <= KeyEvent.KEYCODE_4) {
+            if (event.getRepeatCount() == 0 && !dead) act(actions[code - KeyEvent.KEYCODE_1]);
+            return true;
+        }
+        if (code == KeyEvent.KEYCODE_BACK || code == KeyEvent.KEYCODE_MENU) {
+            if (event.getRepeatCount() == 0) startActivity(new Intent(this, PetMenu.class));
             return true;
         }
         return super.onKeyDown(code, event);

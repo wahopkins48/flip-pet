@@ -38,7 +38,7 @@ final class CoverPet extends Presentation {
     private final Handler poll = new Handler();
     private final Runnable tick = new Runnable() {
         @Override public void run() {
-            render();
+            if (getDisplay().getState() != Display.STATE_OFF) render();
             poll.postDelayed(this, POLL_MS);
         }
     };
@@ -81,12 +81,14 @@ final class CoverPet extends Presentation {
     @Override protected void onStart() {
         super.onStart();
         render();
+        pet.setAnimating(true);
         poll.removeCallbacks(tick);
         poll.postDelayed(tick, POLL_MS);
     }
 
     @Override protected void onStop() {
         poll.removeCallbacks(tick);
+        pet.setAnimating(false);
         super.onStop();
     }
 

@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -19,13 +20,18 @@ public class PetMenu extends Activity {
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
-        list = Ui.listScreen(this, "Flip Pet", "OK picks  -  BACK returns");
+        local = LocalPet.shared(this);
+        list = Ui.listScreen(this, getString(R.string.app_name), "OK picks  -  BACK returns");
         show();
     }
 
     private void show() {
         List<Ui.Row> rows = new ArrayList<>();
         rows.add(new Ui.Row("Name it", "or let it choose one", () -> askName()));
+        boolean survival = local.view().optBoolean("survival");
+        rows.add(new Ui.Row("Care: " + (survival ? "Survival" : "Gentle"),
+            survival ? "empty meters can be fatal" : "slower needs, no death", this::chooseMode));
+        rows.add(new Ui.Row("Creature notes", "what has come through", this::showCreature));
         rows.add(new Ui.Row("Begin a new egg", "the old one is not consulted", this::confirmNew));
         rows.add(new Ui.Row("How this works", null, this::showRules));
         Ui.setRows(list, rows);
@@ -34,6 +40,7 @@ public class PetMenu extends Activity {
     private void askName() {
         final EditText field = new EditText(this);
         field.setSingleLine(true);
+        field.setFilters(new InputFilter[]{new InputFilter.LengthFilter(18)});
         field.setHint("blank lets it choose");
         field.setTextColor(Color.WHITE);
         new AlertDialog.Builder(this)
@@ -42,6 +49,32 @@ public class PetMenu extends Activity {
             .setPositiveButton("OK", (d, w) -> name(text(field)))
             .setNegativeButton("Never mind", null)
             .show();
+    }
+
+    private void chooseMode() {
+        new AlertDialog.Builder(this)
+            .setTitle("Care mode")
+            .setSingleChoiceItems(new String[]{"Gentle", "Survival"},
+                local.view().optBoolean("survival") ? 1 : 0, (dialog, which) -> {
+                    dialog.dismiss();
+                    if (which == 0) { local.setSurvival(false); show(); }
+                    else new AlertDialog.Builder(this)
+                        .setTitle("Enable Survival?")
+                        .setMessage("Original decay rates. Any meter empty for 15 minutes means permanent death, even while the app is closed. A fresh egg needs care within about five hours. Switching modes does not revive a dead pet.")
+                        .setPositiveButton("Enable", (d, w) -> { local.setSurvival(true); show(); })
+                        .setNegativeButton("Stay as is", null).show();
+                })
+            .setNegativeButton("Cancel", null).show();
+    }
+
+    private void showCreature() {
+        org.json.JSONObject p = local.view();
+        String species = p.optInt("stage") == 0 ? "The shell keeps its secret." : p.optString("species");
+        new AlertDialog.Builder(this).setTitle("Creature notes")
+            .setMessage(species + "\n\n" + p.optString("stage_name") + "\nAge: "
+                + p.optString("age_label") + "\nGeneration: " + p.optInt("generation")
+                + "\n\n" + p.optString("mood"))
+            .setPositiveButton("Close", null).show();
     }
 
     private void confirmNew() {
@@ -56,18 +89,22 @@ public class PetMenu extends Activity {
     private void showRules() {
         new AlertDialog.Builder(this)
             .setTitle("How this works")
-            .setMessage("Four meters drain with real time, so the pet keeps "
-                + "suffering while the phone is off.\n\n"
+            .setMessage("Gentle is the default: slower needs and no permanent death from neglect. You can put the phone away. Survival uses the original, faster decay and a 15-minute grace period once any meter is empty.\n\n"
                 + "Feed it, play with it, lay down salt, let it sleep. Overfeed it "
-                + "and it turns sick, and only fresh salt will cure that.\n\n"
-                + "Leave a meter empty for fifteen minutes and it is gone. After an "
-                + "hour it hatches, and it keeps growing for three days.")
+                + "above 85 FED and it turns sick. Ward until SALT reaches 95 to cure it. Sleep restores LIFE.\n\n"
+                + "Use the D-pad and OK, or keys 1 Feed, 2 Play, 3 Ward, 4 Sleep/Wake. BACK opens this menu.\n\n"
+                + "It hatches after an hour and grows through six stages over three days. No network, notifications or account.")
             .setPositiveButton("Close", null)
             .show();
     }
 
     private static String text(EditText field) {
         return field.getText() == null ? "" : field.getText().toString().trim();
+    }
+
+    @Override protected void onPause() {
+        local.flush();
+        super.onPause();
     }
 
     /** Names it, then returns to the pet so the new name is visible at once. */

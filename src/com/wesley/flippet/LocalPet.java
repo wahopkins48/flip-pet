@@ -16,23 +16,14 @@ import java.util.Random;
  * The pet itself: four meters, six stages, and a mood line.
  *
  * There is no server and no tick loop. Every read folds however long it has been
- * since the last touch into the saved numbers, so the creature keeps suffering
- * while the phone is switched off or in a pocket. Its condition is always a
- * function of how long it has been ignored.
+ * since the last touch into the saved numbers, including time in a pocket.
+ * Gentle care lets it wait safely; Survival makes that absence matter.
  *
  * State is one JSON file in the app's private storage. Nothing leaves the phone.
  */
 final class LocalPet {
     /** The four meters, all "higher is better", matching the four buttons. */
     private static final String[] STATS = {"fed", "joy", "vitality", "wards"};
-
-    /**
-     * Points lost per hour of neglect. Needs bite slowly enough that a few hours
-     * of real life is survivable, fast enough that a forgotten pet actually suffers.
-     * Vitality rises while asleep, which is what makes sleep worth doing.
-     */
-    private static final double[] DECAY_AWAKE = {14.0, 10.0, 8.0, 9.0};
-    private static final double[] DECAY_ASLEEP = {7.0, 3.0, -13.0, 5.0};
 
     /** Hours of age at which the creature stops being what it was. */
     private static final double[] STAGE_HOURS = {0.0, 1.0, 4.0, 12.0, 30.0, 72.0};
@@ -51,14 +42,6 @@ final class LocalPet {
      * the level a fresh pet starts with, so it has to be earned with the Ward button.
      */
     private static final double WARD_CURE = 95.0;
-    /** How long any meter may sit at zero before the pet is gone. */
-    private static final int NEGLECT_GRACE = 15 * 60;
-    /**
-     * A single request may not fold in more than this much time, so that reopening
-     * the app after a week does not skip straight past a hundred hours of misery.
-     */
-    private static final int MAX_ELAPSED = 48 * 3600;
-
     private static final String[] NAME_HEADS = {
         "Vur", "Xoth", "Gla", "Ny", "Zer", "Mor", "Ith", "Qua",
         "Bra", "Sel", "Kha", "Vex", "Oth", "Ygg", "Ur", "Tz",
@@ -122,6 +105,8 @@ final class LocalPet {
 
     private final File file;
     private JSONObject state;
+    private boolean saveFailed;
+    private long lastWrite;
 
     private static LocalPet shared;
 
@@ -139,6 +124,8 @@ final class LocalPet {
     LocalPet(Context c) {
         file = new File(c.getFilesDir(), "pet.json");
         state = read();
+        // Persist the very first egg before the process can be reclaimed.
+        write();
     }
 
     // ---------------------------------------------------------------- state
@@ -154,6 +141,8 @@ final class LocalPet {
         put(s, "asleep", false);
         put(s, "sick", false);
         put(s, "dead", false);
+        put(s, "dead_at", 0L);
+        put(s, "survival", false);
         put(s, "cause", "");
         put(s, "neglect", 0);
         put(s, "last", now);
@@ -192,10 +181,15 @@ final class LocalPet {
             out.flush();
             out.getFD().sync();
         } catch (IOException e) {
+            saveFailed = true;
             return;
         }
-        if (!tmp.renameTo(file)) tmp.delete();
+        saveFailed = !tmp.renameTo(file);
+        if (saveFailed) tmp.delete();
+        else lastWrite = nowSeconds();
     }
+
+    void flush() { write(); }
 
     private static long nowSeconds() {
         return System.currentTimeMillis() / 1000L;
@@ -231,57 +225,32 @@ final class LocalPet {
      */
     private void tick() {
         long now = nowSeconds();
-        long elapsed = Math.max(0, Math.min(MAX_ELAPSED, now - state.optLong("last", now)));
-        boolean changed = false;
-        boolean asleep = state.optBoolean("asleep");
-
-        if (elapsed > 0) {
-            double hours = elapsed / 3600.0;
-            double[] rates = asleep ? DECAY_ASLEEP : DECAY_AWAKE;
-            // Sickness doubles the slow bleed on vitality and wards.
-            double strain = state.optBoolean("sick") ? 2.0 : 1.0;
-            for (int i = 0; i < STATS.length; i++) {
-                double rate = rates[i];
-                if ((STATS[i].equals("vitality") || STATS[i].equals("wards")) && rate > 0) {
-                    rate *= strain;
-                }
-                put(state, STATS[i], clamp(state.optDouble(STATS[i], 0.0) - rate * hours));
-            }
+        if (state.optBoolean("dead")) return;
+        long last = state.optLong("last", now);
+        // A clock correction backwards must not double-charge time later or de-age the pet.
+        if (now < last) {
+            put(state, "born", state.optLong("born", now) + now - last);
             put(state, "last", now);
-            changed = true;
+            write();
+            return;
         }
-
-        boolean wasSick = state.optBoolean("sick");
-        boolean dead = state.optBoolean("dead");
-        String starved = "";
-        for (String stat : STATS) {
-            if (state.optDouble(stat, 0.0) <= 0.0) {
-                starved = stat;
-                break;
-            }
+        double[] meters = new double[STATS.length];
+        for (int i = 0; i < meters.length; i++) meters[i] = state.optDouble(STATS[i], 0);
+        PetRules.Result result = PetRules.advance(meters, state.optBoolean("asleep"),
+            state.optBoolean("sick"), state.optBoolean("survival"),
+            state.optDouble("neglect", 0), now - last);
+        for (int i = 0; i < meters.length; i++) put(state, STATS[i], result.meters[i]);
+        put(state, "neglect", result.neglect);
+        put(state, "last", now);
+        if (result.dead) {
+            put(state, "dead", true);
+            put(state, "dead_at", last + (long) Math.ceil(result.advanced));
+            put(state, "cause", causeFor(STATS[result.cause]));
+            put(state, "asleep", false);
         }
-        if (!dead && starved.isEmpty()) {
-            if (state.optInt("neglect") != 0) {
-                put(state, "neglect", 0);
-                changed = true;
-            }
-        } else if (!dead) {
-            int neglect = state.optInt("neglect") + (int) elapsed;
-            put(state, "neglect", neglect);
-            if (neglect >= NEGLECT_GRACE) {
-                put(state, "dead", true);
-                put(state, "cause", causeFor(starved));
-                put(state, "asleep", false);
-                changed = true;
-            }
-        }
-        // Only a sickness that was already there can be cured, otherwise
-        // overfeeding a ward-healthy pet would leave no trace at all.
-        if (wasSick && !dead && state.optDouble("wards", 0.0) >= WARD_CURE) {
-            put(state, "sick", false);
-            changed = true;
-        }
-        if (changed) write();
+        // Screens poll every five seconds. Avoid fsync on every glance; actions and
+        // lifecycle exits still save immediately, and elapsed time can be replayed.
+        if (result.dead || saveFailed || now - lastWrite >= 60) write();
     }
 
     private static String causeFor(String stat) {
@@ -329,9 +298,11 @@ final class LocalPet {
     /** The whole pet as the screens want it. Named to match the old bridge view. */
     JSONObject view() {
         tick();
-        double ageHours = (nowSeconds() - state.optLong("born")) / 3600.0;
-        int stage = stageFor(ageHours);
         boolean dead = state.optBoolean("dead");
+        long at = dead ? state.optLong("dead_at", 0) : nowSeconds();
+        if (at <= 0) at = state.optLong("last", nowSeconds());
+        double ageHours = Math.max(0, (at - state.optLong("born")) / 3600.0);
+        int stage = stageFor(ageHours);
         String message = dead ? state.optString("cause") : mood();
 
         String name = state.optString("name");
@@ -351,6 +322,11 @@ final class LocalPet {
         put(v, "dead", dead);
         put(v, "cause", state.optString("cause"));
         put(v, "neglect", state.optInt("neglect"));
+        put(v, "survival", state.optBoolean("survival"));
+        put(v, "save_failed", saveFailed);
+        put(v, "danger", !dead && state.optBoolean("survival") && anyEmpty());
+        put(v, "grace_minutes", Math.max(0, (int) Math.ceil(
+            (PetRules.GRACE_SECONDS - state.optDouble("neglect", 0)) / 60.0)));
         put(v, "generation", state.optInt("generation", 1));
         put(v, "phenotype", phenotype());
         put(v, "species", SPECIES[phenotype()]);
@@ -399,6 +375,10 @@ final class LocalPet {
             put(state, "wards", clamp(state.optDouble("wards", 0.0) + 35));
             put(state, "joy", clamp(state.optDouble("joy", 0.0) - 4));
             said = "the salt holds. for now";
+            if (state.optBoolean("sick") && state.optDouble("wards", 0) >= WARD_CURE) {
+                put(state, "sick", false);
+                said = "fresh salt. only one of it remains";
+            }
         } else if ("sleep".equals(action)) {
             if (state.optBoolean("asleep")) {
                 said = "it is already asleep";
@@ -418,6 +398,7 @@ final class LocalPet {
         }
 
         put(state, "last", nowSeconds());
+        if (!anyEmpty()) put(state, "neglect", 0);
         write();
         return withMessage(said);
     }
@@ -446,10 +427,25 @@ final class LocalPet {
     /** Begins a new egg, keeping the generation count from the last one. */
     JSONObject newEgg() {
         int generation = state.optInt("generation", 1) + 1;
+        boolean survival = state.optBoolean("survival");
         state = fresh(nowSeconds());
+        put(state, "survival", survival);
         put(state, "generation", generation);
         write();
         return withMessage("something is in the egg");
+    }
+
+    JSONObject setSurvival(boolean survival) {
+        tick(); // Account for time under the old rules before changing modes.
+        put(state, "survival", survival);
+        put(state, "neglect", 0);
+        write();
+        return withMessage(survival ? "the stakes are now real" : "it can wait for you");
+    }
+
+    private boolean anyEmpty() {
+        for (String stat : STATS) if (state.optDouble(stat, 0) <= 0) return true;
+        return false;
     }
 
     private JSONObject withMessage(String message) {

@@ -1,102 +1,144 @@
-# Flip Pet
+# Elderflip
 
-A small eldritch pet for a flip phone. Something lives in the egg, it grows
-through six stages over three days, and it keeps suffering while the phone is
-switched off.
+**A small cosmic horror for your dumbphone.**
 
-Everything is on the phone. There is no server, no account, and no network
-permission. Delete the app and the pet is gone for good.
+An offline virtual pet for Android flip phones. Hatch an unknowable little thing,
+feed it, play with it, lay down salt, and let it sleep. Six species grow through
+six stages, from an unthought egg to an elder god, over three days.
 
-## Install
+Gentle care is the default. Your pet can wait while you put the phone away.
+For those who want consequences, Survival mode restores the original stakes.
 
-You need an Android phone with a D-pad. Get `flip-pet.apk` onto it, then either
-sideload it from the file, or install over USB:
+No account, ads, notifications, server, or network permission. All creatures are
+drawn and animated on the phone. No AI runs in the app. The project was built
+with help from OpenCode and refined with Codex.
 
-```
-adb install flip-pet.apk
-```
+## Which phones?
 
-Android will ask whether you trust the source. Tap through. The app asks for no
-permissions at all.
+An **Android 8.0 or later** phone that supports APK sideloading. Designed around
+physical keys and a small screen; the 1.1 preview was checked on a TCL 4058W
+running Android 11 at 240 × 320. Other models still need testing.
 
-## Playing
+This is an Android app, not a KaiOS or Series 30+ app. A phone being a flip phone
+does not by itself make it compatible.
 
-Four buttons, one for each thing the creature needs:
+## Play
 
-| Button | Does |
-| --- | --- |
-| **Feed** | raises FED, a little JOY |
-| **Play** | raises JOY, costs FED and LIFE |
-| **Ward** | lays down salt, raises SALT, a little cost to JOY |
-| **Sleep** | sleeps, or wakes if already asleep |
+Use the D-pad to choose an action and OK to select it, or use the number keys:
 
-**OK** presses the focused button. **BACK** opens the menu: name it, begin a new
-egg, or read the rules.
+| Key | Action | Effect |
+| --- | --- | --- |
+| 1 | Feed | Raises FED and a little JOY |
+| 2 | Play | Raises JOY, costs FED and LIFE |
+| 3 | Ward | Raises SALT, costs a little JOY |
+| 4 | Sleep / Wake | Sleep restores LIFE while other needs drain more slowly |
+| BACK / MENU | Menu | Name, care mode, creature notes, new egg, and rules |
 
-Feeding a pet that is already full makes it **sick**, and sickness doubles how
-fast LIFE and SALT drain. Only more salt cures it, so overfeeding is the one
-mistake that creates a problem rather than solving one.
+Feeding above 85 FED makes it sick. Sickness doubles LIFE and SALT drain when
+those meters are draining. Use Ward to reach at least 95 SALT to cure it; salt
+already on the ground does not cure a new bout of sickness automatically.
 
-Any meter sitting at empty for fifteen minutes kills it. That is not a
-punishment for being busy, it is the whole point: the thing is counting the
-hours you are not looking at it.
+### Gentle and Survival
 
-## Cover screen
+**Gentle** runs meter changes at one quarter of Survival speed. Empty meters
+make for an unhappy creature, but neglect cannot kill it. There are no reminders
+asking you to return. Sleep still restores LIFE, at the gentler pace.
 
-If the phone has a second screen, the same pet appears on it whenever you shut
-the phone: name, creature, and the four meters as one short line.
+**Survival** uses the original faster rates. Once a draining meter reaches zero,
+you have 15 minutes to restore it before permanent death. Time passes while the
+app is closed. From a fresh, awake egg, hunger reaches zero after five hours;
+death follows at five hours fifteen minutes if you do nothing. Sleeping changes
+that timing, but food, joy, and salt still drain.
 
-It is a read-only window. The cover panel takes no touch input, so every control
-stays on the main screen, and the cover is only ever a view onto the same save
-rather than a second pet that could drift out of step.
+Choose the mode in **BACK → Care**. Survival requires confirmation. Switching
+modes keeps the creature and its stats, and does not revive a dead pet. A new
+egg keeps the selected mode. Existing saves upgrade into Gentle mode.
 
-This still needs no permissions. Phones without a second screen, or whose ROM
-refuses to let an app draw on one, get no cover window and lose nothing else.
-
-## How it grows
+## What hatches?
 
 | Age | Stage |
 | --- | --- |
-| under an hour | Egg, unthought |
+| Under 1 hour | Egg, unthought |
 | 1 hour | Hatchling |
 | 4 hours | Writhing thing |
 | 12 hours | Choir of small mouths |
-| a day and a half | Abyssal archon |
-| 3 days | Elder god |
+| 30 hours | Abyssal archon |
+| 72 hours | Elder god |
 
-Six species come out of the one egg. Which one hatches is decided when the egg
-begins, and all six are drawn by the app itself rather than from images.
+Each egg secretly chooses one of six species:
 
-| Species | Looks like |
+| Species | Appearance |
 | --- | --- |
-| Amber Child | the original: a wobbling ball of tentacles and scattered eyes |
-| Pale Host | a swaying tower of bone on many legs, with a ringed maw |
-| The Sleet | a dim core with a swarm of eyes that will not hold still |
-| Red Crown | a round body ringed with small mouths that all sing |
-| Drowned Lamp | a low wet sac with two huge eyes and nothing but patience |
-| Old Harvest | a shaggy star of knuckled points, claws at every tip |
+| Amber Child | Tentacles and scattered eyes |
+| Pale Host | A tower of bone on many legs, with a ringed maw |
+| The Sleet | A dim core and a restless swarm of eyes |
+| Red Crown | A round body ringed with singing mouths |
+| Drowned Lamp | A low wet sac with two huge eyes |
+| Old Harvest | A shaggy star of knuckled points and claws |
 
-Sleeping is worth it. Vitality rises while the pet sleeps and drains while it
-is awake, so a creature that never rests will eventually die of exhaustion
-rather than hunger.
+**Creature notes** reveals the species after hatching, along with age,
+generation, and mood. A dead creature stops aging.
 
-## Naming it
+## Cover screen
 
-BACK, then **Name it**. If you leave the field blank it will pick a name for
-itself.
+On supported phones, the secondary display shows the same pet and its meters.
+It is read-only and shares the main screen's save. Android firmware controls
+whether third-party apps may draw there, so cover support is not guaranteed.
+The app works without a cover display.
 
-## Notes
+## Build and install
 
-The save is one JSON file in the app's private storage. Uninstalling removes it.
-There is no cloud copy and no export.
+This project uses plain Android SDK tools, Bash, Java 17, and `zip`; no Gradle.
+Defaults are SDK build tools **34.0.0** and platform **android-30**, under
+`$ANDROID_HOME` or `~/Android/Sdk`. Override with `BUILD_TOOLS_VERSION` and
+`ANDROID_PLATFORM` if needed.
 
-Built with plain SDK tools, no Gradle: `./build.sh` writes
-`build/flip-pet.apk`, and `./build.sh install` also pushes it over adb.
+For a separate test pet, with no release signing credentials:
 
-Signing uses a keystore that lives in your own home directory, never in this
-repository. Export its passphrase before building (or let the build prompt for
-it):
-
+```sh
+./test.sh
+./build.sh preview
+adb install -r build/preview/elderflip-preview.apk
 ```
-export PET_KS_PASS=<your keystore passphrase>
+
+The launcher calls this **Elderflip Preview**. It has its own app ID and save,
+and cannot overwrite the normal app. It is a debuggable development build.
+`./build.sh preview install` also installs it over USB.
+
+For a release:
+
+```sh
+./build.sh unsigned  # build/unsigned/elderflip-unsigned.apk; needs signing
+./build.sh           # build/release/elderflip.apk; prompts for signing password
+adb install -r build/release/elderflip.apk
 ```
+
+Release signing defaults to `~/.android/flipplayer.keystore`, alias `flipplayer`.
+Set `PET_KEYSTORE` and `PET_KEY_ALIAS` for another key. The build accepts
+`PET_KS_PASS` from your environment or prompts in a terminal; never commit it.
+A missing keystore is generated for a new installation. Updates to an existing
+installation must use its original signing key.
+
+### Upgrading from Flip Pet
+
+The name is now Elderflip, but the release app ID remains
+`com.wesley.flippet` so a correctly signed update retains your pet. Install with
+`adb install -r`; **do not uninstall the old app to upgrade**. The rename alone
+does not require starting a new egg.
+
+The save is a JSON file in private app storage. Uninstalling or clearing storage
+removes it. There is no cloud backup or export.
+
+## Checks
+
+`./test.sh` runs deterministic care simulation tests, including long absences,
+the exact death boundary, sleeping recovery, sickness, and equivalence between
+frequent updates and one catch-up update.
+
+With the preview installed and the phone open/unlocked,
+`python3 tests/device_smoke.py` checks actual Android save migration, persistence,
+and keypad actions. It temporarily replaces the preview save and restores it
+when finished. It never accesses the release app's save or changes the clock.
+
+See [the changelog](CHANGELOG.md) for 1.1 changes. The Reddit drafts in `docs/`
+are launch materials, not posts that have already been published.

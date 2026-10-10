@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.os.Handler;
 import android.view.View;
+import android.view.Display;
 
 import java.util.Random;
 
@@ -68,14 +69,35 @@ final class PetView extends View {
     private float hatchProgress;
 
     private float phase;
+    private boolean animating = true;
     private final Handler tick = new Handler();
     private final Runnable beat = new Runnable() {
         @Override public void run() {
+            if (!animating || !isAttachedToWindow() || getWindowVisibility() != VISIBLE) return;
+            Display display = getDisplay();
+            if (display != null && display.getState() == Display.STATE_OFF) {
+                tick.postDelayed(this, 1000);
+                return;
+            }
             phase += 0.16f;
             invalidate();
             if (isAttachedToWindow()) tick.postDelayed(this, 130);
         }
     };
+
+    void setAnimating(boolean enabled) {
+        animating = enabled;
+        tick.removeCallbacks(beat);
+        if (enabled && isAttachedToWindow() && getWindowVisibility() == VISIBLE) tick.postDelayed(beat, 130);
+    }
+
+    @Override protected void onWindowVisibilityChanged(int visibility) {
+        super.onWindowVisibilityChanged(visibility);
+        // View's constructor can dispatch this before our fields initialize.
+        if (tick == null || beat == null) return;
+        tick.removeCallbacks(beat);
+        if (visibility == VISIBLE && animating && isAttachedToWindow()) tick.postDelayed(beat, 130);
+    }
 
     PetView(Context c) {
         super(c);
@@ -101,7 +123,7 @@ final class PetView extends View {
 
     @Override protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        tick.postDelayed(beat, 130);
+        setAnimating(animating);
     }
 
     @Override protected void onDetachedFromWindow() {
