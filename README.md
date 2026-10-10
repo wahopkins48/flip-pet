@@ -64,6 +64,18 @@ refuses to let an app draw on one, get no cover window and lose nothing else.
 | a day and a half | Abyssal archon |
 | 3 days | Elder god |
 
+Six species come out of the one egg. Which one hatches is decided when the egg
+begins, and all six are drawn by the app itself rather than from images.
+
+| Species | Looks like |
+| --- | --- |
+| Amber Child | the original: a wobbling ball of tentacles and scattered eyes |
+| Pale Host | a swaying tower of bone on many legs, with a ringed maw |
+| The Sleet | a dim core with a swarm of eyes that will not hold still |
+| Red Crown | a round body ringed with small mouths that all sing |
+| Drowned Lamp | a low wet sac with two huge eyes and nothing but patience |
+| Old Harvest | a shaggy star of knuckled points, claws at every tip |
+
 Sleeping is worth it. Vitality rises while the pet sleeps and drains while it
 is awake, so a creature that never rests will eventually die of exhaustion
 rather than hunger.

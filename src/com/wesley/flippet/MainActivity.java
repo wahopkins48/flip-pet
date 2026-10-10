@@ -249,11 +249,12 @@ public class MainActivity extends Activity {
         int stage = p.optInt("stage", 0);
 
         String name = p.optString("name", "unnamed");
-        title.setText(p.optBoolean("named") ? name : "an unthought egg");
+        title.setText(p.optBoolean("named") ? name
+            : (stage <= 0 ? "an unthought egg" : p.optString("species", "Hatchling")));
         stageLine.setText(p.optString("stage_name", "") + "   " + p.optString("age_label", "")
             + (asleep ? "   asleep" : ""));
 
-        pet.setPet(stage, asleep, dead, p.optBoolean("sick"));
+        pet.setPet(stage, asleep, dead, p.optBoolean("sick"), p.optInt("phenotype", 0));
         pet.setHatchProgress(stage == 0
             ? (float) Math.min(1.0, p.optDouble("age_hours", 0.0) / HATCH_HOURS) : 1f);
 

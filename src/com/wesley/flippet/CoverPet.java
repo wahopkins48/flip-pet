@@ -94,11 +94,12 @@ final class CoverPet extends Presentation {
         JSONObject p = local.view();
         int stage = p.optInt("stage", 0);
         boolean dead = p.optBoolean("dead");
-        pet.setPet(stage, p.optBoolean("asleep"), dead, p.optBoolean("sick"));
+        pet.setPet(stage, p.optBoolean("asleep"), dead, p.optBoolean("sick"), p.optInt("phenotype", 0));
         pet.setHatchProgress(stage == 0
             ? (float) Math.min(1.0, p.optDouble("age_hours", 0.0) / MainActivity.HATCH_HOURS)
             : 1f);
-        name.setText(p.optBoolean("named") ? p.optString("name") : "an unthought egg");
+        name.setText(p.optBoolean("named") ? p.optString("name")
+            : (stage <= 0 ? "an unthought egg" : p.optString("species", "Hatchling")));
         meters.setText(compact(p));
         meters.setTextColor(dead ? 0xFFD08080
             : (p.optBoolean("sick") ? 0xFFD0E070 : Color.WHITE));

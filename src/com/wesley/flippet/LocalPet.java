@@ -41,6 +41,11 @@ final class LocalPet {
         "Choir of small mouths", "Abyssal archon", "Elder god",
     };
 
+    /** What hatches out. All six come from the same egg, chosen the moment it begins. */
+    private static final String[] SPECIES = {
+        "Amber Child", "Pale Host", "The Sleet", "Red Crown", "Drowned Lamp", "Old Harvest",
+    };
+
     /**
      * Sickness only lifts once the salt has been laid on properly, which is above
      * the level a fresh pet starts with, so it has to be earned with the Ward button.
@@ -153,6 +158,7 @@ final class LocalPet {
         put(s, "neglect", 0);
         put(s, "last", now);
         put(s, "generation", 1);
+        put(s, "phenotype", new Random(now).nextInt(SPECIES.length));
         return s;
     }
 
@@ -346,6 +352,8 @@ final class LocalPet {
         put(v, "cause", state.optString("cause"));
         put(v, "neglect", state.optInt("neglect"));
         put(v, "generation", state.optInt("generation", 1));
+        put(v, "phenotype", phenotype());
+        put(v, "species", SPECIES[phenotype()]);
         put(v, "mood", message);
         put(v, "message", message);
         return v;
@@ -353,6 +361,12 @@ final class LocalPet {
 
     private static double round(double v) {
         return Math.round(v * 10.0) / 10.0;
+    }
+
+    /** The hatched species, kept stable and in range even against an old save. */
+    private int phenotype() {
+        int given = state.optInt("phenotype", 0);
+        return ((given % SPECIES.length) + SPECIES.length) % SPECIES.length;
     }
 
     // --------------------------------------------------------------- actions
