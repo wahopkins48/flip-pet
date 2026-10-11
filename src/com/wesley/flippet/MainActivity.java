@@ -2,6 +2,7 @@ package com.wesley.flippet;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.hardware.display.DisplayManager;
@@ -53,6 +54,10 @@ public class MainActivity extends Activity {
     private DisplayManager displays;
     private DisplayManager.DisplayListener coverWatch;
     private CoverPet cover;
+    private final SharedPreferences.OnSharedPreferenceChangeListener coverSettingChanged =
+        (preferences, key) -> {
+            if (CoverSettings.KEY_SHOW_PET.equals(key)) runOnUiThread(this::syncCover);
+        };
 
     private final Handler poll = new Handler();
     private final Runnable tick = new Runnable() {
@@ -74,6 +79,7 @@ public class MainActivity extends Activity {
         super.onCreate(state);
         build();
         refresh(true);
+        CoverSettings.preferences(this).registerOnSharedPreferenceChangeListener(coverSettingChanged);
         watchCover();
     }
 
@@ -83,11 +89,12 @@ public class MainActivity extends Activity {
      */
     @Override public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) showCover();
+        if (hasFocus) syncCover();
     }
 
     @Override protected void onDestroy() {
         if (displays != null && coverWatch != null) displays.unregisterDisplayListener(coverWatch);
+        CoverSettings.preferences(this).unregisterOnSharedPreferenceChangeListener(coverSettingChanged);
         hideCover();
         super.onDestroy();
     }
@@ -97,6 +104,7 @@ public class MainActivity extends Activity {
         // Draw now rather than waiting for the next poll, so a change made from
         // the menu (a new egg, a new name) shows up the instant we come back.
         refresh(false);
+        syncCover();
         pet.setAnimating(true);
         poll.removeCallbacks(tick);
         poll.postDelayed(tick, POLL_MS);
@@ -118,7 +126,7 @@ public class MainActivity extends Activity {
         displays = (DisplayManager) getSystemService(DISPLAY_SERVICE);
         coverWatch = new DisplayManager.DisplayListener() {
             @Override public void onDisplayAdded(int id) {
-                runOnUiThread(() -> showCover());
+                runOnUiThread(() -> syncCover());
             }
 
             @Override public void onDisplayRemoved(int id) {
@@ -126,14 +134,20 @@ public class MainActivity extends Activity {
             }
 
             @Override public void onDisplayChanged(int id) {
-                runOnUiThread(() -> showCover());
+                runOnUiThread(() -> syncCover());
             }
         };
         displays.registerDisplayListener(coverWatch, null);
     }
 
+    private void syncCover() {
+        if (CoverSettings.showPet(this)) showCover();
+        else hideCover();
+    }
+
     private void showCover() {
         if (cover != null || displays == null) return;
+        if (!CoverSettings.showPet(this)) return;
         Display panel = findCover();
         if (panel == null) return;
         if (local == null) local = LocalPet.shared(this);

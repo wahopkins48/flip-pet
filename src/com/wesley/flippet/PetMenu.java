@@ -31,10 +31,25 @@ public class PetMenu extends Activity {
         boolean survival = local.view().optBoolean("survival");
         rows.add(new Ui.Row("Care: " + (survival ? "Survival" : "Gentle"),
             survival ? "empty meters can be fatal" : "slower needs, no death", this::chooseMode));
+        boolean showCoverPet = CoverSettings.showPet(this);
+        rows.add(new Ui.Row("Cover: " + (showCoverPet ? "Pet + clock" : "Phone clock"),
+            showCoverPet ? "pet and time when closed" : "use the phone's own screen", this::chooseCover));
         rows.add(new Ui.Row("Creature notes", "what has come through", this::showCreature));
         rows.add(new Ui.Row("Begin a new egg", "the old one is not consulted", this::confirmNew));
         rows.add(new Ui.Row("How this works", null, this::showRules));
         Ui.setRows(list, rows);
+    }
+
+    private void chooseCover() {
+        new AlertDialog.Builder(this)
+            .setTitle("Outer screen")
+            .setSingleChoiceItems(new String[]{"Phone clock", "Pet + clock"},
+                CoverSettings.showPet(this) ? 1 : 0, (dialog, which) -> {
+                    dialog.dismiss();
+                    CoverSettings.setShowPet(this, which == 1);
+                    show();
+                })
+            .setNegativeButton("Cancel", null).show();
     }
 
     private void askName() {

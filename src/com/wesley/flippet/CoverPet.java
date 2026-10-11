@@ -10,6 +10,7 @@ import android.view.Display;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextClock;
 import android.widget.TextView;
 
 import org.json.JSONObject;
@@ -31,6 +32,7 @@ final class CoverPet extends Presentation {
     private static final int ACCENT = 0xFFB388FF;
 
     private final LocalPet local;
+    private final TextClock clock;
     private final TextView name;
     private final TextView meters;
     private final PetView pet;
@@ -52,12 +54,23 @@ final class CoverPet extends Presentation {
         root.setBackgroundColor(BG);
         root.setPadding(3, 3, 3, 3);
 
+        clock = new TextClock(host);
+        clock.setGravity(Gravity.CENTER);
+        clock.setSingleLine(true);
+        clock.setTextColor(Color.WHITE);
+        clock.setTypeface(Typeface.MONOSPACE);
+        clock.setTextSize(13f);
+        clock.setFormat12Hour("h:mm a");
+        clock.setFormat24Hour("HH:mm");
+        root.addView(clock, new LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
         name = new TextView(host);
         name.setGravity(Gravity.CENTER);
         name.setSingleLine(true);
         name.setEllipsize(TextUtils.TruncateAt.END);
         name.setTextColor(ACCENT);
-        name.setTextSize(10f);
+        name.setTextSize(9f);
         root.addView(name, new LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 

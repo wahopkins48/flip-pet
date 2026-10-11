@@ -13,6 +13,8 @@ No account, ads, notifications, server, or network permission. All creatures are
 drawn and animated on the phone. No AI runs in the app. The project was built
 with help from OpenCode and refined with Codex.
 
+![Elderflip running on an Android flip phone, with Drowned Lamp awake and its four care actions visible](docs/media/elderflip-phone-awake.png)
+
 ## Which phones?
 
 An **Android 8.0 or later** phone that supports APK sideloading. Designed around
@@ -32,7 +34,9 @@ Use the D-pad to choose an action and OK to select it, or use the number keys:
 | 2 | Play | Raises JOY, costs FED and LIFE |
 | 3 | Ward | Raises SALT, costs a little JOY |
 | 4 | Sleep / Wake | Sleep restores LIFE while other needs drain more slowly |
-| BACK / MENU | Menu | Name, care mode, creature notes, new egg, and rules |
+| BACK / MENU | Menu | Name, care mode, outer screen, creature notes, new egg, and rules |
+
+![Drowned Lamp asleep in Elderflip, with the Wake action visible](docs/media/elderflip-phone-main.png)
 
 Feeding above 85 FED makes it sick. Sickness doubles LIFE and SALT drain when
 those meters are draining. Use Ward to reach at least 95 SALT to cure it; salt
@@ -53,6 +57,8 @@ that timing, but food, joy, and salt still drain.
 Choose the mode in **BACK → Care**. Survival requires confirmation. Switching
 modes keeps the creature and its stats, and does not revive a dead pet. A new
 egg keeps the selected mode. Existing saves upgrade into Gentle mode.
+
+![Elderflip menu showing the Gentle care mode and creature notes](docs/media/elderflip-phone-menu.png)
 
 ## What hatches?
 
@@ -81,10 +87,15 @@ generation, and mood. A dead creature stops aging.
 
 ## Cover screen
 
-On supported phones, the secondary display shows the same pet and its meters.
-It is read-only and shares the main screen's save. Android firmware controls
-whether third-party apps may draw there, so cover support is not guaranteed.
-The app works without a cover display.
+The default is **Phone clock**, which leaves the outer display to the phone's
+own interface. Choose **BACK → Outer screen → Pet + clock** to show the pet,
+time, and meters when the phone is closed. The pet view is read-only and shares
+the main screen's save. Switch back to **Phone clock** at any time. Android
+firmware controls whether third-party apps may draw on the outer screen, so
+the pet view is not guaranteed on every model. The pet view does not show a
+notification count; use **Phone clock** to keep the phone's own indicators.
+
+![Drowned Lamp asleep on the flip phone's small outer display](docs/media/elderflip-phone-cover.png)
 
 ## Build and install
 
