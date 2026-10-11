@@ -36,6 +36,8 @@ Use the D-pad to choose an action and OK to select it, or use the number keys:
 | 4 | Sleep / Wake | Sleep restores LIFE while other needs drain more slowly |
 | BACK / MENU | Menu | Name, care mode, outer screen, creature notes, new egg, and rules |
 
+Feed and Play wake a sleeping pet and then take effect. Ward leaves it asleep.
+
 ![Drowned Lamp asleep in Elderflip, with the Wake action visible](docs/media/elderflip-phone-main.png)
 
 Feeding above 85 FED makes it sick. Sickness doubles LIFE and SALT drain when

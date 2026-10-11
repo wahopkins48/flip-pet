@@ -106,7 +106,7 @@ public class PetMenu extends Activity {
             .setTitle("How this works")
             .setMessage("Gentle is the default: slower needs and no permanent death from neglect. You can put the phone away. Survival uses the original, faster decay and a 15-minute grace period once any meter is empty.\n\n"
                 + "Feed it, play with it, lay down salt, let it sleep. Overfeed it "
-                + "above 85 FED and it turns sick. Ward until SALT reaches 95 to cure it. Sleep restores LIFE.\n\n"
+                + "above 85 FED and it turns sick. Ward until SALT reaches 95 to cure it. Sleep restores LIFE. Feed and Play wake it; Ward lets it sleep.\n\n"
                 + "Use the D-pad and OK, or keys 1 Feed, 2 Play, 3 Ward, 4 Sleep/Wake. BACK opens this menu.\n\n"
                 + "It hatches after an hour and grows through six stages over three days. No network, notifications or account.")
             .setPositiveButton("Close", null)

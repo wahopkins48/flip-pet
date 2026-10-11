@@ -354,23 +354,30 @@ final class LocalPet {
             return withMessage("there is nothing left to " + action);
         }
 
+        boolean woke = state.optBoolean("asleep")
+            && ("feed".equals(action) || "play".equals(action));
+        if (woke) put(state, "asleep", false);
+
         String said;
         if ("feed".equals(action)) {
             if (state.optDouble("fed", 0.0) > 85) {
                 // Overfeeding is the one mistake that creates a problem rather
                 // than solving one.
                 put(state, "sick", true);
-                said = "too much. it is keeping the extra";
+                said = woke ? "it wakes, overeats, and sickens"
+                    : "too much. it is keeping the extra";
             } else {
                 put(state, "fed", clamp(state.optDouble("fed", 0.0) + 38));
                 put(state, "joy", clamp(state.optDouble("joy", 0.0) + 4));
-                said = "it eats. the room gets quieter";
+                said = woke ? "it wakes to eat. the room quiets"
+                    : "it eats. the room gets quieter";
             }
         } else if ("play".equals(action)) {
             put(state, "joy", clamp(state.optDouble("joy", 0.0) + 30));
             put(state, "fed", clamp(state.optDouble("fed", 0.0) - 8));
             put(state, "vitality", clamp(state.optDouble("vitality", 0.0) - 12));
-            said = "it plays. you regret starting this";
+            said = woke ? "it wakes to play. you regret it"
+                : "it plays. you regret starting this";
         } else if ("ward".equals(action)) {
             put(state, "wards", clamp(state.optDouble("wards", 0.0) + 35));
             put(state, "joy", clamp(state.optDouble("joy", 0.0) - 4));
