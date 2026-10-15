@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Elderflip</title>
+    <link rel="modulepreload" href="main.js">
+    <style>
+    :root {
+      --bg: #07040c;
+      --panel: #120c1a;
+      --line: #2a2033;
+      --text: #f1eaf7;
+      --dim: #a99db5;
+      --accent: #f4743b;
+      --warn: #ffaa80;
+      --sick: #d0e070;
+      --fed: #7bd88f;
+      --joy: #e0c060;
+      --life: #6bb0e8;
+      --salt: #b388ff;
+      color-scheme: dark;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font:
+        14px / 1.3 ui-sans-serif,
+        system-ui,
+        -apple-system,
+        'Segoe UI',
+        Roboto,
+        sans-serif;
+      /* Inline in the feed: never trap a scroll or a pinch. */
+      overflow: hidden;
+      touch-action: pan-y;
+      overscroll-behavior: auto;
+    }
+    main {
+      height: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 10px 12px 10px;
+      display: grid;
+      grid-template-rows: auto minmax(90px, 1fr) auto auto auto auto;
+      gap: 8px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+    .who {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    #species,
+    .when {
+      color: var(--dim);
+    }
+    .when {
+      flex: none;
+      font-size: 12px;
+      text-align: right;
+    }
+    #pet {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      display: block;
+      border-radius: 10px;
+    }
+    #mood {
+      margin: 0;
+      min-height: 2.6em;
+      text-align: center;
+      font-style: italic;
+      color: var(--text);
+    }
+    #mood.danger {
+      color: var(--warn);
+      font-style: normal;
+      font-weight: 600;
+    }
+    #mood.sick {
+      color: var(--sick);
+    }
+    .meters {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 14px;
+    }
+    .meter {
+      display: grid;
+      grid-template-columns: 3.2em 1fr 2.2em;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .meter output {
+      text-align: right;
+      color: var(--dim);
+      font-variant-numeric: tabular-nums;
+      font-weight: 400;
+    }
+    .bar {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--line);
+      overflow: hidden;
+    }
+    .bar i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: currentColor;
+    }
+    /* Animate changes, not the first paint. */
+    main.ready .bar i {
+      transition: width 0.4s ease;
+    }
+    .meter.empty .bar {
+      outline: 1px solid var(--warn);
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+    button {
+      font: inherit;
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      min-height: 44px;
+      padding: 4px 2px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      line-height: 1.1;
+    }
+    button b {
+      font-size: 15px;
+    }
+    button small {
+      color: var(--dim);
+      font-size: 11px;
+    }
+    button:hover:not(:disabled) {
+      border-color: var(--accent);
+    }
+    button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    button:disabled {
+      cursor: default;
+      opacity: 0.45;
+    }
+    button.warn small {
+      color: var(--warn);
+    }
+    .ended {
+      display: none;
+      gap: 8px;
+      justify-items: center;
+      text-align: center;
+      color: var(--dim);
+    }
+    .ended button {
+      padding: 4px 16px;
+      background: var(--accent);
+      color: #140a04;
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+    /* Buttons are display: grid, which would otherwise beat the attribute. */
+    button[hidden] {
+      display: none;
+    }
+    main.over .actions {
+      display: none;
+    }
+    main.over .ended {
+      display: grid;
+    }
+    footer {
+      font-size: 12px;
+      color: var(--dim);
+      text-align: center;
+      min-height: 1.3em;
+    }
+    #turn {
+      color: var(--text);
+    }
+    @media (max-height: 380px) {
+      #mood {
+        min-height: 1.3em;
+      }
+      .meters {
+        gap: 3px 12px;
+      }
+      #recent {
+        display: none;
+      }
+    }
+    </style>
+  </head>
+  <body>
+    <main id="app" aria-busy="true">
+      <header>
+        <div class="who">
+          <span id="name">An egg</span>
+          <span id="species"></span>
+        </div>
+        <div class="when">
+          <div id="stage">waking something up</div>
+          <div id="age"></div>
+        </div>
+      </header>
+      <canvas id="pet" role="img" aria-label="An unthought egg"></canvas>
+      <p id="mood" aria-live="polite"></p>
+      <section class="meters" aria-label="Needs">
+        <div class="meter" style="color: var(--fed)">
+          <span>FED</span>
+          <div class="bar"><i id="bar-fed"></i></div>
+          <output id="val-fed">–</output>
+        </div>
+        <div class="meter" style="color: var(--joy)">
+          <span>JOY</span>
+          <div class="bar"><i id="bar-joy"></i></div>
+          <output id="val-joy">–</output>
+        </div>
+        <div class="meter" style="color: var(--life)">
+          <span>LIFE</span>
+          <div class="bar"><i id="bar-life"></i></div>
+          <output id="val-life">–</output>
+        </div>
+        <div class="meter" style="color: var(--salt)">
+          <span>SALT</span>
+          <div class="bar"><i id="bar-salt"></i></div>
+          <output id="val-salt">–</output>
+        </div>
+      </section>
+      <div>
+        <nav class="actions" aria-label="Care">
+          <button type="button" data-action="feed" disabled>
+            <b>Feed</b><small>+FED</small>
+          </button>
+          <button type="button" data-action="play" disabled>
+            <b>Play</b><small>+JOY</small>
+          </button>
+          <button type="button" data-action="ward" disabled>
+            <b>Ward</b><small>+SALT</small>
+          </button>
+          <button type="button" data-action="sleep" id="sleep" disabled>
+            <b>Sleep</b><small>+LIFE</small>
+          </button>
+        </nav>
+        <div class="ended">
+          <span id="ended-text"></span>
+          <button type="button" id="next" hidden>Visit the newest egg</button>
+        </div>
+      </div>
+      <footer>
+        <div id="turn"></div>
+        <div id="recent"></div>
+      </footer>
+    </main>
+    <script src="main.js" type="module"></script>
+  </body>
+</html>

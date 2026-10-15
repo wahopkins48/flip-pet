@@ -1,0 +1,97 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "elderflip",
+  "post": {
+    "dir": "public",
+    "entrypoints": {
+      "default": {
+        "entry": "index.html",
+        "height": "tall"
+      }
+    }
+  },
+  "server": {
+    "dir": "dist/server",
+    "entry": "index.js"
+  },
+  "permissions": {
+    "redis": true,
+    "realtime": true,
+    "reddit": {
+      "enable": true
+    }
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Elderflip: lay a new egg",
+        "description": "Start a new community creature in its own post.",
+        "forUserType": "moderator",
+        "location": "subreddit",
+        "endpoint": "/internal/menu/new-egg"
+      },
+      {
+        "label": "Elderflip: give it a new name",
+        "description": "Pick a different name from Elderflip's list.",
+        "forUserType": "moderator",
+        "location": "post",
+        "postFilter": "currentApp",
+        "endpoint": "/internal/menu/rename"
+      }
+    ]
+  },
+  "forms": {
+    "newEgg": "/internal/form/new-egg"
+  },
+  "triggers": {
+    "onAppInstall": "/internal/on/app/install",
+    "onPostDelete": "/internal/on/post/delete"
+  },
+  "scheduler": {
+    "tasks": {
+      "tend": {
+        "endpoint": "/internal/scheduler/tend",
+        "cron": "*/5 * * * *"
+      }
+    }
+  },
+  "settings": {
+    "subreddit": {
+      "careMode": {
+        "type": "select",
+        "label": "Care rules for new eggs",
+        "helpText": "Gentle: needs drain slowly, and it dies 6 hours after any need empties. Survival: four times faster, and it dies 15 minutes after any need empties. Applies from the next egg.",
+        "options": [
+          {
+            "label": "Gentle (recommended)",
+            "value": "gentle"
+          },
+          {
+            "label": "Survival",
+            "value": "survival"
+          }
+        ],
+        "defaultValue": "gentle"
+      },
+      "cooldownMinutes": {
+        "type": "number",
+        "label": "Minutes between turns for each member (1 to 240)",
+        "helpText": "Each member can take one action, then waits this long. Longer turns make each choice matter more.",
+        "validationEndpoint": "/internal/settings/validate-cooldown",
+        "defaultValue": 10
+      },
+      "autoNewEgg": {
+        "type": "boolean",
+        "label": "Lay the next egg automatically when a creature ascends or dies",
+        "defaultValue": true
+      }
+    }
+  },
+  "scripts": {
+    "dev": "npm run watch",
+    "build": "npm run build"
+  },
+  "dev": {
+    "subreddit": "elderflip_dev"
+  }
+}
