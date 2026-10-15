@@ -30,8 +30,13 @@ public final class PetRulesTest {
         }
         check(r.dead==small.dead,"polling does not change survival");
         for(int i=0;i<4;i++) near(r.meters[i],small.meters[i],"polling invariant");
-        r=run(fresh,false,true,false,0,30*86400);
-        check(!r.dead,"gentle survives a month away");near(r.neglect,0,"no hidden gentle death timer");
+        // Gentle: food empties at 20 hours, then six hours of grace.
+        r=run(fresh,false,false,false,0,26*3600-1);
+        check(!r.dead,"gentle survives a day away");near(r.neglect,6*3600-1,"gentle grace tracked");
+        r=run(fresh,false,false,false,0,30*86400);
+        check(r.dead && r.cause==0,"gentle still starves eventually");near(r.advanced,26*3600,"gentle death at 26h");
+        r=run(new double[]{0,0,0,0},false,false,false,0,6*3600);
+        check(r.dead,"all four empty in gentle is fatal after grace");
         r=run(fresh,false,false,false,0,4*3600);near(r.meters[0],56,"quarter-speed gentle decay");
         r=run(new double[]{50,50,0,50},true,false,true,880,60);
         check(!r.dead && r.meters[2]>0,"sleep rescues zero vitality");near(r.neglect,0,"recovery resets neglect");

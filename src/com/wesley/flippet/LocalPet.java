@@ -17,7 +17,7 @@ import java.util.Random;
  *
  * There is no server and no tick loop. Every read folds however long it has been
  * since the last touch into the saved numbers, including time in a pocket.
- * Gentle care lets it wait safely; Survival makes that absence matter.
+ * Gentle care forgives a long absence; Survival makes even a short one matter.
  *
  * State is one JSON file in the app's private storage. Nothing leaves the phone.
  */
@@ -324,9 +324,9 @@ final class LocalPet {
         put(v, "neglect", state.optInt("neglect"));
         put(v, "survival", state.optBoolean("survival"));
         put(v, "save_failed", saveFailed);
-        put(v, "danger", !dead && state.optBoolean("survival") && anyEmpty());
+        put(v, "danger", !dead && anyEmpty());
         put(v, "grace_minutes", Math.max(0, (int) Math.ceil(
-            (PetRules.GRACE_SECONDS - state.optDouble("neglect", 0)) / 60.0)));
+            (PetRules.grace(state.optBoolean("survival")) - state.optDouble("neglect", 0)) / 60.0)));
         put(v, "generation", state.optInt("generation", 1));
         put(v, "phenotype", phenotype());
         put(v, "species", SPECIES[phenotype()]);
@@ -447,7 +447,7 @@ final class LocalPet {
         put(state, "survival", survival);
         put(state, "neglect", 0);
         write();
-        return withMessage(survival ? "the stakes are now real" : "it can wait for you");
+        return withMessage(survival ? "the stakes are now real" : "it can wait for you, for a while");
     }
 
     private boolean anyEmpty() {

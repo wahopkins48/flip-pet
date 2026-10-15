@@ -6,7 +6,8 @@ An offline virtual pet for Android flip phones. Hatch an unknowable little thing
 feed it, play with it, lay down salt, and let it sleep. Six species grow through
 six stages, from an unthought egg to an elder god, over three days.
 
-Gentle care is the default. Your pet can wait while you put the phone away.
+Gentle care is the default. Your pet can wait while you put the phone away, but
+not forever: check in about once a day.
 For those who want consequences, Survival mode restores the original stakes.
 
 No account, ads, notifications, server, or network permission. All creatures are
@@ -46,9 +47,11 @@ already on the ground does not cure a new bout of sickness automatically.
 
 ### Gentle and Survival
 
-**Gentle** runs meter changes at one quarter of Survival speed. Empty meters
-make for an unhappy creature, but neglect cannot kill it. There are no reminders
-asking you to return. Sleep still restores LIFE, at the gentler pace.
+**Gentle** runs meter changes at one quarter of Survival speed. Once a draining
+meter reaches zero, you have 6 hours to restore it before permanent death. From a
+fresh, awake egg, hunger reaches zero after 20 hours; death follows at 26 hours
+if you do nothing. There are no reminders asking you to return. Sleep still
+restores LIFE, at the gentler pace.
 
 **Survival** uses the original faster rates. Once a draining meter reaches zero,
 you have 15 minutes to restore it before permanent death. Time passes while the

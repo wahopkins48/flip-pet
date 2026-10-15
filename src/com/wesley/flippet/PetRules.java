@@ -3,6 +3,8 @@ package com.wesley.flippet;
 /** Pure time simulation: reading often or after a day produces the same result. */
 final class PetRules {
     static final double GRACE_SECONDS = 15 * 60;
+    /** Gentle drains slowly and forgives a lot, but a meter left empty all day is fatal. */
+    static final double GENTLE_GRACE_SECONDS = 6 * 3600;
     static final double[] AWAKE = {14, 10, 8, 9};
     static final double[] ASLEEP = {7, 3, -13, 5};
 
@@ -36,16 +38,19 @@ final class PetRules {
             }
         }
         double carried = firstEmpty == 0 ? Math.max(0, neglect) : 0;
-        double deathAt = firstEmpty + Math.max(0, GRACE_SECONDS - carried);
-        boolean dead = survival && seconds >= deathAt;
+        double deathAt = firstEmpty + Math.max(0, grace(survival) - carried);
+        boolean dead = seconds >= deathAt;
         double advanced = Math.max(0, dead ? deathAt : seconds);
         double[] result = meters.clone();
         for (int i = 0; i < result.length; i++) {
             result[i] = Math.max(0, Math.min(100, result[i] - rates[i] * advanced / 3600));
         }
-        double emptySeconds = survival && advanced >= firstEmpty
-            ? carried + advanced - firstEmpty : 0;
+        double emptySeconds = advanced >= firstEmpty ? carried + advanced - firstEmpty : 0;
         return new Result(result, emptySeconds, dead, cause, advanced);
+    }
+
+    static double grace(boolean survival) {
+        return survival ? GRACE_SECONDS : GENTLE_GRACE_SECONDS;
     }
 
     private PetRules() {}

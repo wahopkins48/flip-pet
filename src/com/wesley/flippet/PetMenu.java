@@ -30,7 +30,7 @@ public class PetMenu extends Activity {
         rows.add(new Ui.Row("Name it", "or let it choose one", () -> askName()));
         boolean survival = local.view().optBoolean("survival");
         rows.add(new Ui.Row("Care: " + (survival ? "Survival" : "Gentle"),
-            survival ? "empty meters can be fatal" : "slower needs, no death", this::chooseMode));
+            survival ? "empty meters can be fatal" : "slower needs, slower death", this::chooseMode));
         boolean showCoverPet = CoverSettings.showPet(this);
         rows.add(new Ui.Row("Cover: " + (showCoverPet ? "Pet + clock" : "Phone clock"),
             showCoverPet ? "pet and time when closed" : "use the phone's own screen", this::chooseCover));
@@ -104,7 +104,7 @@ public class PetMenu extends Activity {
     private void showRules() {
         new AlertDialog.Builder(this)
             .setTitle("How this works")
-            .setMessage("Gentle is the default: slower needs and no permanent death from neglect. You can put the phone away. Survival uses the original, faster decay and a 15-minute grace period once any meter is empty.\n\n"
+            .setMessage("Gentle is the default: needs drain at a quarter speed, and once any meter is empty you have 6 hours to fix it. Check in about once a day. Survival uses the original, faster decay and only 15 minutes of grace.\n\n"
                 + "Feed it, play with it, lay down salt, let it sleep. Overfeed it "
                 + "above 85 FED and it turns sick. Ward until SALT reaches 95 to cure it. Sleep restores LIFE. Feed and Play wake it; Ward lets it sleep.\n\n"
                 + "Use the D-pad and OK, or keys 1 Feed, 2 Play, 3 Ward, 4 Sleep/Wake. BACK opens this menu.\n\n"

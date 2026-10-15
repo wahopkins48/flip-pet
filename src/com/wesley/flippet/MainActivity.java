@@ -302,7 +302,9 @@ public class MainActivity extends Activity {
         }
         status.setTextColor(dead ? 0xFFD08080 : (p.optBoolean("sick") ? 0xFFD0E070 : Color.WHITE));
         if (p.optBoolean("danger")) {
-            status.setText("Empty meter: " + p.optInt("grace_minutes") + " min left. Care now.");
+            int left = p.optInt("grace_minutes");
+            status.setText("Empty meter: " + (left >= 60 ? left / 60 + " h" : left + " min")
+                + " left. Care now.");
             status.setTextColor(0xFFFFAA80);
         }
         if (p.optBoolean("save_failed")) {

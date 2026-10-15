@@ -5,7 +5,7 @@
 - Rename the app from Flip Pet to Elderflip; keep the app ID for save-compatible upgrades.
 - Let players choose the phone's outer-screen interface (the default) or a pet view with a clock.
 - Wake a sleeping pet when feeding or playing; Ward leaves it asleep.
-- Make Gentle the default: quarter-speed meter changes and no death from neglect.
+- Make Gentle the default: quarter-speed meter changes and a 6-hour grace once a meter empties, so neglect can still kill.
 - Add optional Survival mode with explicit confirmation and an on-screen grace warning.
 - Fix elapsed-time deaths: the 15-minute grace starts when a meter empties, not at the beginning of the entire absence.
 - Freeze a dead creature's age and meters at its death time.
